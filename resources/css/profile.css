@@ -1,0 +1,536 @@
+/* PROFILE PAGE STYLES (append to style.css) */
+.profile-root {
+  padding: 30px 40px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* top summary */
+.profile-top {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.avatar-wrap {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #000;
+  background: #fff;
+}
+
+.avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-right .user-lines {
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* tabs */
+.profile-tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 0px;
+}
+
+.tab-btn {
+  padding: 12px 22px;
+  border-radius: 12px 12px 0 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+}
+
+.tab-btn.active {
+  background: #a87957; /* brown tab color */
+  color: #fff;
+}
+
+/* large rounded content panel */
+.profile-panel {
+  background: #a87957; /* brown background like screenshot */
+  padding: 28px;
+  border-radius: 0px;
+  color: #111;
+}
+
+/* inner white cards area */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Rented card layout */
+.rented-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rented-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #efefef;
+  border-radius: 18px;
+  padding: 12px;
+}
+
+.rented-left img {
+  width: 110px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.rented-middle h4 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+}
+
+.rented-middle .meta .chip {
+  display: inline-block;
+  background: #bfa37f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.rented-middle .small {
+  font-size: 13px;
+  color: #333;
+}
+
+/* right column price */
+.rented-right {
+  margin-left: auto;
+  text-align: right;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:8px;
+}
+
+.price-strip {
+  background: linear-gradient(90deg, rgba(146,196,71,0.8) 20%, rgba(237,221,83,0) 100%);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #000;
+}
+
+.link-update {
+  color: #222;
+  text-decoration: underline;
+  font-size: 13px;
+}
+
+/* Notification cards */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.notif-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #efefef;
+  border-radius: 18px;
+  padding: 12px;
+}
+
+.notif-left img {
+  width: 100px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.notif-body {
+  flex: 1;
+}
+
+.notif-body h4 {
+  margin: 0 0 6px 0;
+}
+
+.notif-message {
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.notif-soon .notif-message {
+  color: #2b8f2a; /* green */
+}
+.notif-urgent .notif-message {
+  color: #c21807; /* red */
+}
+.notif-ok .notif-message {
+  color: #333;
+}
+
+/* Settings layout */
+.settings-grid {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+
+.avatar-wrap-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.avatar-wrap-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-form label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.profile-form input[type="text"],
+.profile-form input[type="email"] {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.settings-actions {
+  margin-top: 10px;
+  display:flex;
+  gap: 12px;
+}
+
+.action-btn {
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.action-btn.update {
+  background: #f4a64b; /* orange */
+  color: #fff;
+}
+
+.action-btn.logout {
+  background: #ff2b2b; /* red */
+  color: #fff;
+}
+
+.small-link {
+  display:block;
+  margin-top:8px;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .profile-top {
+    flex-direction: row;
+    gap: 16px;
+  }
+  .settings-grid {
+    flex-direction: column;
+  }
+  .rented-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .rented-right {
+    align-self: stretch;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+}
+
+/* ===== MODAL STYLES (WIDER + BETTER ALIGN) ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: none;                /* toggled to flex by JS when open */
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  padding: 24px;                /* breathing room on small screens */
+}
+
+.modal-content {
+  background: #fff;
+  padding: 28px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 540px;             /* increased width to fix alignment */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  position: relative;
+  animation: fadeIn 0.22s ease;
+  box-sizing: border-box;
+}
+
+/* header close X */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 26px;
+  cursor: pointer;
+  color: #333;
+}
+
+/* modal title */
+.modal-content h2 {
+  margin: 0 0 14px 0;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* form area: two-column layout on desktop */
+.form-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 28px;
+  align-items: start;
+}
+
+/* Make full-width on small screens */
+@media (max-width: 820px) {
+  .modal-content { max-width: 94%; padding: 20px; }
+  .form-section { grid-template-columns: 1fr; }
+}
+
+/* size options area */
+.form-section .size-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* size buttons */
+.size-btn {
+  background: #ddd;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-size: 14px;
+}
+.size-btn:hover { transform: translateY(-1px); }
+.size-btn.active { background: #6f4f2d; color: #fff; }
+
+/* delivery radios - place under size but full-width when needed */
+.delivery-method {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+/* separators */
+.modal-content hr {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 2px solid #d4c2ad;
+  margin: 10px 0 14px 0;
+}
+
+/* labels and inputs styling */
+.form-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+/* Inputs span full width of their column */
+.form-section input[type="datetime-local"],
+.form-section input[type="text"] {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Note line spans full width */
+.form-section .note {
+  grid-column: 1 / -1;
+  color: #c21807;
+  font-size: 13px;
+  margin: 8px 0 12px 0;
+}
+
+/* Update button spans full width below */
+.update-btn {
+  grid-column: 1 / -1;
+  background: #7cb342;
+  color: #fff;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+/* small tweaks for accessibility */
+.size-options .size-btn:focus,
+.form-section input:focus,
+.update-btn:focus,
+.close-btn:focus {
+  outline: 3px solid rgba(107,83,60,0.15);
+  outline-offset: 2px;
+}
+
+/* ===== Reset Password Modal ===== */
+/* RESET PASSWORD MODAL OVERLAY */
+.reset-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* MODAL BOX */
+.reset-modal {
+    background: #fff;
+    width: 420px;
+    padding: 32px 36px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    text-align: center;
+}
+
+/* TITLE */
+.reset-modal h2 {
+    margin-bottom: 24px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* INPUTS */
+.reset-modal input {
+    width: 100%;
+    padding: 14px 1px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+    border: none;
+    background: #d9d9d9;
+    font-size: 15px;
+    color: #333;
+}
+
+.reset-modal input::placeholder {
+    color: #444;
+    margin-right: 12px;
+}
+
+/* RESET BUTTON */
+.reset-btn {
+    width: 100%;
+    padding: 14px;
+    background: #1683ff;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.reset-btn:hover {
+    opacity: 0.95;
+}
+
+/* CANCEL BUTTON */
+.cancel-btn {
+    margin-top: 12px;
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    color: #333;
+}
+
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: #777;
+  font-weight: 600;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  color: #333;
+}
+
+.error-msg {
+    color: #c21807;
+    font-size: 12px;
+    margin-top: -6px;
+    margin-bottom: 6px;
+    display: block;
+}
