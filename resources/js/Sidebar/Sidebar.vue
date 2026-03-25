@@ -1,38 +1,61 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img :src="logoSrc" alt="Logo">
+      <img :src="logoSrc" alt="Logo" />
     </div>
 
     <nav class="sidebar-nav">
       <ul>
         <li>
-          <router-link to="/admin/dashboard">
+          <router-link
+            to="/admin/dashboard"
+            :class="{ active: isActive('/admin/dashboard') }"
+          >
             <i class="fa-solid fa-house"></i><span>Dashboard</span>
           </router-link>
         </li>
+
         <li>
-          <router-link to="/admin/inventory-men">
+          <router-link
+            to="/admin/inventory-men"
+            :class="{ active: isInventoryActive }"
+          >
             <i class="fa-solid fa-box-open"></i><span>Inventory</span>
           </router-link>
         </li>
+
         <li>
-          <router-link to="/admin/reservations">
+          <router-link
+            to="/admin/reservations"
+            :class="{ active: isActive('/admin/reservations') }"
+          >
             <i class="fa-solid fa-calendar-check"></i><span>Reservation</span>
           </router-link>
         </li>
+
         <li>
-          <router-link to="/admin/reports">
+          <router-link
+            to="/admin/reports"
+            :class="{ active: isActive('/admin/reports') }"
+          >
             <i class="fa-solid fa-chart-column"></i><span>Report</span>
           </router-link>
         </li>
+
         <li>
-          <router-link to="/admin/users">
+          <router-link
+            to="/admin/users"
+            :class="{ active: isActive('/admin/users') }"
+          >
             <i class="fa-solid fa-user"></i><span>User List</span>
           </router-link>
         </li>
+
         <li>
-          <router-link to="/admin/settings">
+          <router-link
+            to="/admin/settings"
+            :class="{ active: isActive('/admin/settings') }"
+          >
             <i class="fa-solid fa-gear"></i><span>Settings</span>
           </router-link>
         </li>
@@ -55,19 +78,31 @@ export default {
       loggingOut: false
     }
   },
+
   computed: {
     logoSrc() {
       return this.setting?.logo ? `/${this.setting.logo}` : this.defaultLogo
+    },
+
+    isInventoryActive() {
+      return this.$route.path.startsWith('/admin/inventory')
     }
   },
+
   async mounted() {
     await this.fetchSettings()
     window.addEventListener('settings-updated', this.fetchSettings)
   },
+
   beforeUnmount() {
     window.removeEventListener('settings-updated', this.fetchSettings)
   },
+
   methods: {
+    isActive(path) {
+      return this.$route.path === path
+    },
+
     async fetchSettings() {
       try {
         const res = await fetch('/api/settings', {
@@ -132,7 +167,6 @@ export default {
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px;
   position: fixed;
-  
 }
 
 .sidebar-logo img {
@@ -143,12 +177,13 @@ export default {
 .sidebar-nav {
   width: 125%;
   margin-top: 15%;
-  margin-left: 13%;
+  margin-left: 11%;
 }
 
 .sidebar-nav ul {
   list-style: none;
   width: 100%;
+  align-items: center;
 }
 
 .sidebar a {
@@ -191,7 +226,7 @@ export default {
   background-color: #cc9966;
 }
 
-.sidebar-nav li a.router-link-exact-active {
+.sidebar-nav li a.active {
   background-color: #cc9966;
 }
 

@@ -6,9 +6,11 @@
 /* Main Content */
 .inventory-content {
   flex: 1;
-  padding: 20px 2px 20px 2px;
+  padding: 20px 1px 0px 1px;
   overflow-y: auto;
-  margin-left: 220px;
+  margin-left: 175px;
+  width: 89%;
+  box-sizing: border-box;
   margin-bottom: 10px;
 }
 
@@ -130,7 +132,6 @@
   background-color: white;
   border-radius: 15px;
   color: #000;
-  padding: 15px 20px;
   font-weight: 600;
 }
 
@@ -138,7 +139,7 @@
   background-color: white;
   border-radius: 15px;
   padding: 12px 20px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 /* Ensures the image stays aligned properly */
@@ -224,7 +225,7 @@
   flex: 1;
    padding: 30px 20px;
   overflow-y: auto;
-  margin-left: 250px;
+  margin-left: 190px;
 }
 .user-content h1 {
   margin-top: 15px;
@@ -411,14 +412,13 @@
   flex: 1;
   padding: 30px 20px;
   overflow-y: auto;
-  margin-left: 250px;
+  margin-left: 200px;
 }
 .setting-h1 {
-  font-size: 2rem;
+  font-size: 18px;
   margin-bottom: 1rem;
   color: #fffefe;
 }
-
 
 .settings-card {
   background-color: white;

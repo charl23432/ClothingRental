@@ -22,8 +22,24 @@
               <td>{{ formatDate(reservation.rent_time) }}</td>
               <td>{{ capitalize(reservation.delivery) }}</td>
               <td>
-                <button class="view-btn" @click="openModal(reservation)">View</button>
-                <button class="cancel-btn" @click="markReturned(reservation.id)">Returned</button>
+                <button class="view-btn" @click="openModal(reservation)">
+                  View
+                </button>
+
+                <button
+                  class="cancel-btn"
+                  :class="{ returned: reservation.status === 'Returned', disabled: isReturning(reservation.id) }"
+                  :disabled="reservation.status === 'Returned' || isReturning(reservation.id)"
+                  @click="markReturned(reservation)"
+                >
+                  {{
+                    isReturning(reservation.id)
+                      ? 'Processing...'
+                      : reservation.status === 'Returned'
+                      ? 'Returned'
+                      : 'Return'
+                  }}
+                </button>
               </td>
             </tr>
 
@@ -38,43 +54,50 @@
     </div>
 
     <!-- MODAL -->
-<div v-if="showModal" class="modal-overlay" @click="closeModal">
-  <div class="modal-box" @click.stop>
-    <h3>Reservation Details</h3>
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-box" @click.stop>
+        <h3>Reservation Details</h3>
 
-    <!-- IMAGE -->
-    <div class="modal-image">
-      <img
-        :src="productImage(selectedReservation.product?.image)"
-        alt="Item Image"
-      />
+        <div class="modal-image">
+          <img
+            :src="productImage(selectedReservation.product?.image)"
+            alt="Item Image"
+          />
+        </div>
+
+        <p><strong>Customer:</strong> {{ selectedReservation.user?.name || 'N/A' }}</p>
+        <p><strong>Item:</strong> {{ selectedReservation.product?.item_name || 'Deleted Product' }}</p>
+        <p><strong>Date Reserved:</strong> {{ formatDate(selectedReservation.rent_time) }}</p>
+        <p><strong>Pickup/Delivery:</strong> {{ capitalize(selectedReservation.delivery) }}</p>
+        <p><strong>Size:</strong> {{ capitalize(selectedReservation.size) }}</p>
+        <p><strong>Reference No.:</strong> {{ selectedReservation.gcash_reference || '-' }}</p>
+        <p><strong>Price:</strong> ₱{{ formatPrice(selectedReservation.price) }}</p>
+        <p><strong>Status:</strong> {{ selectedReservation.status || '-' }}</p>
+
+        <button class="close-btn" @click="closeModal">Close</button>
+      </div>
     </div>
-
-    <p><strong>Customer:</strong> {{ selectedReservation.user?.name || 'N/A' }}</p>
-    <p><strong>Item:</strong> {{ selectedReservation.product?.item_name || 'Deleted Product' }}</p>
-    <p><strong>Date Reserved:</strong> {{ formatDate(selectedReservation.rent_time) }}</p>
-    <p><strong>Pickup/Delivery:</strong> {{ capitalize(selectedReservation.delivery) }}</p>
-    <p><strong>Size:</strong> {{ capitalize(selectedReservation.size) }}</p>
-    <p><strong>Reference No.:</strong> {{ selectedReservation.gcash_reference || '-' }}</p>
-    <p><strong>Price:</strong> ₱{{ formatPrice(selectedReservation.price) }}</p>
-    <p><strong>Status:</strong> {{ selectedReservation.status || '-' }}</p>
-
-    <button class="close-btn" @click="closeModal">Close</button>
-  </div>
-</div>
   </div>
 </template>
 
-<<script>
+<script>
 export default {
-  props: ['search'],
+  props: {
+    search: {
+      type: String,
+      default: ''
+    }
+  },
+
   data() {
     return {
       reservations: [],
       showModal: false,
-      selectedReservation: {}
+      selectedReservation: {},
+      returningIds: []
     }
   },
+
   computed: {
     filteredReservations() {
       const keyword = (this.search || '').toLowerCase()
@@ -85,9 +108,11 @@ export default {
       )
     }
   },
+
   mounted() {
     this.fetchReservations()
   },
+
   methods: {
     async fetchReservations() {
       try {
@@ -97,14 +122,24 @@ export default {
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-        this.reservations = await res.json()
+
+        const text = await res.text()
+        console.log('CONFIRMED RESERVATIONS RESPONSE:', text)
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch reservations (${res.status})`)
+        }
+
+        this.reservations = JSON.parse(text)
       } catch (error) {
         console.error('Failed to fetch confirmed reservations:', error)
       }
     },
 
     formatDate(date) {
-      return new Date(date).toLocaleString()
+      if (!date) return '-'
+      const parsed = new Date(date)
+      return isNaN(parsed.getTime()) ? date : parsed.toLocaleString()
     },
 
     formatPrice(price) {
@@ -132,20 +167,66 @@ export default {
       this.selectedReservation = {}
     },
 
-    async markReturned(id) {
+    isReturning(id) {
+      return this.returningIds.includes(id)
+    },
+
+    async markReturned(reservation) {
+      if (!reservation || !reservation.id) return
+
+      if (reservation.status === 'Returned') {
+        alert('This item was already returned.')
+        return
+      }
+
+      if (this.isReturning(reservation.id)) {
+        return
+      }
+
       if (!confirm('Mark this item as returned?')) return
 
+      this.returningIds.push(reservation.id)
+
       try {
-        await fetch(`/api/reservations/${id}/return`, {
+        const res = await fetch(`/api/reservations/${reservation.id}/return`, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-        this.fetchReservations()
+
+        const text = await res.text()
+        console.log('RETURN RESPONSE STATUS:', res.status)
+        console.log('RETURN RESPONSE BODY:', text)
+
+        let data = {}
+        try {
+          data = text ? JSON.parse(text) : {}
+        } catch {
+          data = { message: text }
+        }
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to return reservation.')
+        }
+
+        const index = this.reservations.findIndex(r => r.id === reservation.id)
+        if (index !== -1) {
+          this.reservations[index].status = 'Returned'
+        }
+
+        if (this.selectedReservation?.id === reservation.id) {
+          this.selectedReservation.status = 'Returned'
+        }
+
+        await this.fetchReservations()
+        alert(data.message || 'Item returned successfully.')
       } catch (error) {
         console.error('Failed to return reservation:', error)
+        alert(error.message || 'Failed to return reservation.')
+      } finally {
+        this.returningIds = this.returningIds.filter(id => id !== reservation.id)
       }
     }
   }
@@ -156,7 +237,6 @@ export default {
 .reservation-header {
   flex: 1;
   padding: 30px 40px;
-  overflow-y: hidden;
 }
 
 .reservation-header h1 {
@@ -278,7 +358,7 @@ tbody tr td:last-child {
   background-color: #9cff57;
   color: #000;
   border: none;
-  padding: 6px 14px;
+  padding: 6px 25px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 500;
@@ -293,7 +373,7 @@ tbody tr td:last-child {
   background-color: #e6e6e6;
   color: #000;
   border: none;
-  padding: 6px 14px;
+  padding: 6px 20px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 500;
@@ -302,6 +382,23 @@ tbody tr td:last-child {
 
 .cancel-btn:hover {
   background-color: #d5d5d5;
+}
+
+.cancel-btn.returned {
+  background-color: #d9d9d9;
+  color: #333;
+  cursor: not-allowed;
+}
+.cancel-btn.disabled {
+ padding: 6px 15px;
+}
+.cancel-btn.disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.cancel-btn:disabled {
+  pointer-events: none;
 }
 
 .table-container table,
@@ -339,10 +436,12 @@ tbody tr td:last-child {
 .table-scroll::-webkit-scrollbar {
   width: 2px;
 }
+
 .table-scroll::-webkit-scrollbar-thumb {
   background-color: #ffffff00;
   border-radius: 100px;
 }
+
 .table-scroll::-webkit-scrollbar-track {
   background-color: #cc9966;
 }
@@ -383,6 +482,7 @@ tbody tr td:last-child {
   border-radius: 10px;
   cursor: pointer;
 }
+
 .modal-image {
   display: flex;
   justify-content: center;

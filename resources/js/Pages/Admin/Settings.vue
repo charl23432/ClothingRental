@@ -1,8 +1,8 @@
 <template>
   <div class="setting-content">
-    <div class="setting-h1">
+    <header class="setting-h1">
       <h1>Settings</h1>
-    </div>
+    </header>
 
     <div v-if="successMessage" class="alert success">
       {{ successMessage }}

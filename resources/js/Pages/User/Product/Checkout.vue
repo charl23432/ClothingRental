@@ -172,19 +172,49 @@ export default {
       this.product = checkoutData.product
       this.availableSizes = checkoutData.availableSizes || []
       this.setting = await settingsRes.json()
+
+      if (this.availableSizes.length > 0) {
+        this.selectedSize = this.availableSizes[0].size
+      }
     } catch (error) {
       console.error('Failed to load checkout data:', error)
     }
   },
   methods: {
     getCsrfToken() {
-      return document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content') || ''
+      const meta = document.querySelector('meta[name="csrf-token"]')
+      return meta ? meta.getAttribute('content') : ''
     },
 
     async submitCheckout() {
       try {
+        if (!this.product) {
+          alert('Product not loaded.')
+          return
+        }
+
+        if (!this.selectedSize) {
+          alert('Please select a size.')
+          return
+        }
+
+        if (!this.rent_time) {
+          alert('Please select rent time.')
+          return
+        }
+
+        if (!this.gcash_reference) {
+          alert('Please enter GCash reference.')
+          return
+        }
+
+        const csrfToken = this.getCsrfToken()
+
+        if (!csrfToken) {
+          alert('CSRF token missing. Refresh the page.')
+          return
+        }
+
         const payload = {
           product_id: this.product.id,
           price: this.product.rental_fee,
@@ -194,19 +224,22 @@ export default {
           gcash_reference: this.gcash_reference
         }
 
-        const res = await fetch('/api/checkout/store', {
-            method: 'POST',
-            credentials: 'same-origin', // ✅ IMPORTANT
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRF-TOKEN': this.getCsrfToken() // ✅ IMPORTANT
-            },
-            body: JSON.stringify(payload)
-          })
+        const res = await fetch('/checkout/store', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+          },
+          body: JSON.stringify(payload)
+        })
 
-        const data = await res.json()
+        const contentType = res.headers.get('content-type') || ''
+        const data = contentType.includes('application/json')
+          ? await res.json()
+          : { message: await res.text() }
 
         if (!res.ok) {
           throw new Error(data.message || 'Checkout failed')
@@ -215,7 +248,7 @@ export default {
         alert(data.message || 'Reservation submitted successfully!')
         this.$router.push('/profile')
       } catch (error) {
-        console.error(error)
+        console.error('Checkout error:', error)
         alert(error.message || 'Something went wrong during checkout.')
       }
     },

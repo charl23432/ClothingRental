@@ -47,9 +47,18 @@ const routes = [
     children: [
       { path: '', redirect: '/admin/dashboard' },
       { path: 'dashboard', name: 'Dashboard', component: Dashboard },
-      { path: 'inventory-men', name: 'InventoryMen', component: InventoryMen },
+      {
+        path: '/admin/inventory-men',
+        name: 'inventory-men',
+        component: InventoryMen
+      },
+      {
+        path: '/admin/inventory-women',
+        name: 'inventory-women',
+        component: InventoryWomen
+      },
       { path: 'inventory-men-ps', name: 'InventoryMenPS', component: InventoryMenPS },
-      { path: 'inventory-women', name: 'InventoryWomen', component: InventoryWomen },
+    
       { path: 'inventory-women-ps', name: 'InventoryWomenPS', component: InventoryWomenPS },
       { path: 'inventory/add/:category', name: 'AddItemPage', component: AddItemPage, props: true },
       { path: 'inventory/edit/:id', name: 'EditItemPage', component: EditItemPage, props: true },

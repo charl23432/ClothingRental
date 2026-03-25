@@ -59,8 +59,7 @@ export default {
 .reservation-header {
   flex: 1;
   padding: 30px 20px;
-  overflow-y: auto;
-  margin-left: 250px;
+   margin-left: 190px;
 }
 
 /* Title */

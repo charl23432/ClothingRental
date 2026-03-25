@@ -12,6 +12,7 @@ use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CheckoutController;
 
 
+
 Route::middleware('auth')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -30,7 +31,8 @@ Route::get('/inventory-women', [InventoryController::class, 'women']);
 Route::get('/inventory-men-ps', [InventoryController::class, 'menPS']);
 Route::get('/inventory-women-ps', [InventoryController::class, 'womenPS']);
 Route::post('/inventory', [InventoryController::class, 'store']);
-Route::post('/inventory/{item}', [InventoryController::class, 'update']);
+Route::put('/inventory/{item}', [InventoryController::class, 'update']);
+Route::get('/inventory/{item}', [InventoryController::class, 'show']);
 Route::delete('/inventory/{item}', [InventoryController::class, 'destroy']);
 
 // Reservations
@@ -38,6 +40,7 @@ Route::get('/reservations/pending', [ReservationController::class, 'pending']);
 Route::get('/reservations/confirmed', [ReservationController::class, 'confirmed']);
 Route::post('/reservations/{reservation}/confirm', [ReservationController::class, 'confirm']);
 Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel']);
+Route::post('/reservations/{reservation}/update', [ReservationController::class, 'update']);
 Route::post('/reservations/{reservation}/return', [ReservationController::class, 'returnItem']);
 
 // Users
@@ -70,4 +73,5 @@ Route::get('/women/prom', [ProductController::class, 'womenProm']);
 
 Route::get('/checkout/{id}', [CheckoutController::class, 'checkout']);
 // Profile
+
 

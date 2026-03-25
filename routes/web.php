@@ -20,14 +20,15 @@ Route::middleware('auth')->get('/me', function (Request $request) {
     return response()->json($request->user());
 });
 
-
+// Checkout submit
 Route::middleware('auth')->group(function () {
-    Route::post('/api/checkout/store', [CheckoutController::class, 'store']);
+    Route::post('/checkout/store', [CheckoutController::class, 'store']);
 });
 
 // Profile/session routes
 Route::middleware('auth')->group(function () {
     Route::get('/api/profile', [ProfileController::class, 'profile']);
+    Route::post('/api/profile/notifications/read', [ProfileController::class, 'markNotificationsAsRead']);
     Route::post('/api/profile/update', [ProfileController::class, 'update']);
     Route::post('/api/reservations/{reservation}/update', [ProfileController::class, 'updateReservation']);
     Route::post('/api/profile/reset-password', [ProfileController::class, 'resetPassword']);

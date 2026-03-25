@@ -117,6 +117,7 @@ export default {
         category: this.category,
         sizes: [],
         image: null,
+        id: null,
       },
       previewImage: "/images/hfhmn.jpg",
       showSizeModal: false,
@@ -132,7 +133,7 @@ export default {
 
   computed: {
     isEdit() {
-      return !!this.itemData;
+      return !!this.itemData && Object.keys(this.itemData).length > 0;
     },
 
     redirectUrl() {
@@ -149,19 +150,29 @@ export default {
     },
   },
 
-  mounted() {
-    if (this.isEdit && this.itemData) {
-      this.item = {
-        ...this.itemData,
-        sizes: Array.isArray(this.itemData.sizes)
-          ? this.itemData.sizes
-          : this.parseSizes(this.itemData.sizes),
-      };
+  watch: {
+    itemData: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue && Object.keys(newValue).length > 0) {
+          this.item = {
+            id: newValue.id || null,
+            item_name: newValue.item_name || "",
+            quantity: newValue.quantity || "",
+            rental_fee: newValue.rental_fee || "",
+            category: newValue.category || this.category,
+            sizes: Array.isArray(newValue.sizes)
+              ? newValue.sizes
+              : this.parseSizes(newValue.sizes),
+            image: newValue.image || null,
+          };
 
-      this.previewImage = this.item.image
-        ? `/storage/${this.item.image}`
-        : "/images/hfhmn.jpg";
-    }
+          this.previewImage = newValue.image
+            ? `/storage/${newValue.image}`
+            : "/images/hfhmn.jpg";
+        }
+      },
+    },
   },
 
   methods: {
@@ -279,7 +290,7 @@ export default {
   flex: 1;
   padding: 20px;
   margin-top: 20px;
-  margin-left: 30px;
+  margin-left: 200px;
 }
 
 .main-content h2 {
@@ -373,7 +384,7 @@ h2:hover i {
   width: 98%;
   margin-top: 10px;
   border-collapse: collapse;
-  color: #e8e7e7;
+  color: #000000;
 }
 
 #size-table th,

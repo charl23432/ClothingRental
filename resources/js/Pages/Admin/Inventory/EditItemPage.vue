@@ -1,5 +1,9 @@
 <template>
-  <ItemForm :item-data="item" :redirect-url="'/inventory-men'" />
+  <div>
+    <p v-if="loading">Loading item...</p>
+    <p v-else-if="error">{{ error }}</p>
+    <ItemForm v-else :item-data="item" />
+  </div>
 </template>
 
 <script>
@@ -9,13 +13,33 @@ export default {
   components: { ItemForm },
   data() {
     return {
-      item: {}
+      item: null,
+      loading: true,
+      error: null
     }
   },
-  mounted() {
-    fetch(`/api/inventory/${this.$route.params.id}`)
-      .then(res => res.json())
-      .then(data => this.item = data)
+  async mounted() {
+    try {
+      const res = await fetch(`/api/inventory/${this.$route.params.id}`, {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+
+      const text = await res.text()
+      console.log('EDIT FETCH RESPONSE:', text)
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+      this.item = JSON.parse(text)
+    } catch (err) {
+      console.error(err)
+      this.error = 'Failed to load item.'
+    } finally {
+      this.loading = false
+    }
   }
 }
 </script>

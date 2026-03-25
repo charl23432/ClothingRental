@@ -12,7 +12,7 @@
 
       <div class="products">
         <router-link
-          v-for="product in tux"
+          v-for="product in tuxLimited"
           :key="product.id"
           :to="`/products/${product.id}`"
           class="product"
@@ -31,7 +31,7 @@
 
       <div class="products">
         <router-link
-          v-for="product in prom"
+          v-for="product in promLimited"
           :key="product.id"
           :to="`/products/${product.id}`"
           class="product"
@@ -53,9 +53,25 @@ export default {
       prom: []
     }
   },
+
+  computed: {
+    tuxLimited() {
+      return this.tux.slice(0, 5)
+    },
+    promLimited() {
+      return this.prom.slice(0, 5)
+    }
+  },
+
   async mounted() {
     try {
-      const res = await fetch('/api/men')
+      const res = await fetch('/api/men', {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
       const data = await res.json()
       this.tux = data.tux || []
       this.prom = data.prom || []
@@ -63,12 +79,13 @@ export default {
       console.error('Failed to load men dashboard:', error)
     }
   },
+
   methods: {
     productImage(image) {
       return image ? `/storage/${image}` : '/images/hfhmn.jpg'
     },
     formatPrice(price) {
-      return Number(price).toLocaleString('en-PH', {
+      return Number(price || 0).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })

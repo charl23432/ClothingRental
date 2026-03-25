@@ -16,43 +16,78 @@ class ProfileController extends Controller
      * GET profile data for Vue
      */
     public function profile()
-{
-    /** @var User|null $user */
-    $user = Auth::user();
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
 
-    if (!$user) {
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        $notifications = $user->notifications()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->data['title'] ?? 'Notification',
+                    'message' => $notification->data['message'] ?? '',
+                    'image' => $notification->data['image'] ?? null,
+                    'status' => $notification->data['status'] ?? null,
+                    'reservation_id' => $notification->data['reservation_id'] ?? null,
+                    'created_at' => $notification->created_at,
+                    'read_at' => $notification->read_at,
+                    'is_read' => !is_null($notification->read_at),
+                ];
+            });
+
+        $reservations = Reservation::with('product')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $unreadCount = $user->notifications()
+            ->whereNull('read_at')
+            ->count();
+
         return response()->json([
-            'message' => 'Unauthenticated'
-        ], 401);
+            'user' => $user,
+            'reservations' => $reservations,
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
+        ]);
     }
 
-    // ✅ FIX: transform notification data
-    $notifications = $user->notifications()
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->map(function ($notification) {
-            return [
-                'id' => $notification->id,
-                'title' => $notification->data['title'] ?? 'Notification',
-                'message' => $notification->data['message'] ?? '',
-                'image' => $notification->data['image'] ?? null,
-                'status' => $notification->data['status'] ?? null,
-                'reservation_id' => $notification->data['reservation_id'] ?? null,
-                'created_at' => $notification->created_at,
-            ];
-        });
+    /**
+     * Mark all notifications as read
+     */
+    public function markNotificationsAsRead()
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
 
-    $reservations = Reservation::with('product')
-        ->where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->get();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
 
-    return response()->json([
-        'user' => $user,
-        'reservations' => $reservations,
-        'notifications' => $notifications,
-    ]);
-}
+        $user->notifications()
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notifications marked as read.',
+            'unread_count' => 0,
+        ]);
+    }
+
     /**
      * Update profile
      */
@@ -74,9 +109,9 @@ class ProfileController extends Controller
             $user->profile_photo = $path;
         }
 
-        $user->name    = $request->name;
-        $user->email   = $request->email;
-        $user->number  = $request->number;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->number = $request->number;
         $user->address = $request->address;
         $user->save();
 

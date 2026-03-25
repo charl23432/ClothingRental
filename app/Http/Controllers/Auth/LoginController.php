@@ -16,18 +16,23 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+    $request->session()->regenerate();
 
-            $redirect = Auth::user()->role === 'admin'
-                ? '/admin/dashboard'
-                : '/men';
+    /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $user->last_seen = now();
+        $user->save();
 
-            return response()->json([
-                'message' => 'Login successful.',
-                'user' => Auth::user(),
-                'redirect' => $redirect,
-            ], 200);
-        }
+    $redirect = $user->role === 'admin'
+        ? '/admin/dashboard'
+        : '/men';
+
+    return response()->json([
+        'message' => 'Login successful.',
+        'user' => $user,
+        'redirect' => $redirect,
+    ], 200);
+}
 
         return response()->json([
             'message' => 'The credentials do not match our records.',
@@ -39,6 +44,14 @@ class LoginController extends Controller
 
     public function logout(Request $request)
 {
+    if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $user->last_seen = now();
+            $user->save();
+        }
+    
+
     Auth::logout();
 
     $request->session()->invalidate();

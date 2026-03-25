@@ -12,7 +12,7 @@
 
       <div class="products">
         <router-link
-          v-for="product in wedding"
+          v-for="product in weddingLimited"
           :key="product.id"
           :to="`/products/${product.id}`"
           class="product"
@@ -31,7 +31,7 @@
 
       <div class="products">
         <router-link
-          v-for="product in prom"
+          v-for="product in promLimited"
           :key="product.id"
           :to="`/products/${product.id}`"
           class="product"
@@ -49,15 +49,32 @@
 <script>
 export default {
   name: 'WomenDashboard',
+
   data() {
     return {
       wedding: [],
       prom: []
     }
   },
+
+  computed: {
+    weddingLimited() {
+      return this.wedding.slice(0, 5)
+    },
+    promLimited() {
+      return this.prom.slice(0, 5)
+    }
+  },
+
   async mounted() {
     try {
-      const res = await fetch('/api/women')
+      const res = await fetch('/api/women', {
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
       const data = await res.json()
 
       this.wedding = data.wedding || []
@@ -66,16 +83,19 @@ export default {
       console.error('Failed to load women dashboard:', error)
     }
   },
+
   methods: {
     productImage(image) {
       return image ? `/storage/${image}` : '/images/hfhmn.jpg'
     },
+
     formatPrice(price) {
-      return Number(price).toLocaleString('en-PH', {
+      return Number(price || 0).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })
     },
+
     async logout() {
       try {
         await fetch('/logout', {
@@ -84,7 +104,8 @@ export default {
             'X-CSRF-TOKEN': document
               .querySelector('meta[name="csrf-token"]')
               ?.getAttribute('content') || '',
-            'Accept': 'application/json'
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
           }
         })
 

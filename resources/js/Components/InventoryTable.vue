@@ -50,7 +50,8 @@ Out of stock
 
 <span class="action-btns">
 
-<router-link :to="{ path: `/inventory/edit/${item.id}` }" class="edit-btn">
+<router-link
+  :to="{ name: 'EditItemPage', params: { id: item.id } }" class="edit-btn">
   Edit
 </router-link>
 

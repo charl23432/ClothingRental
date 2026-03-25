@@ -22,7 +22,7 @@
               <td>{{ formatDate(reservation.rent_time) }}</td>
               <td>{{ reservation.gcash_reference || '-' }}</td>
               <td>
-                <button class="confirm-btn" @click="confirmReservation(reservation.id)" :disabled="reservation.product?.quantity === 0">
+                <button class="confirm" @click="confirmReservation(reservation.id)" :disabled="reservation.product?.quantity === 0">
                   Confirm
                 </button>
                 <button class="cancel-btn" @click="cancelReservation(reservation.id)">
@@ -238,7 +238,16 @@ tbody tr td:last-child {
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
 }
-
+.confirm{
+  background-color: #9cff57;
+  color: #000;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
 
 /* Cancel button */
 .cancel-btn {
