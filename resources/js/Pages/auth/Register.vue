@@ -35,6 +35,7 @@
             required
           />
 
+          <!-- PASSWORD -->
           <label for="password">Password</label>
           <div class="password-container">
             <input
@@ -44,9 +45,24 @@
               placeholder="Password"
               required
             />
-            <span class="eye-icon" @click="showPassword = !showPassword">👁</span>
+
+            <span class="eye-icon" @click="showPassword = !showPassword">
+              <!-- EYE -->
+              <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+
+              <!-- EYE SLASH -->
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a21.77 21.77 0 015.17-6.58"/>
+                <path d="M1 1l22 22"/>
+                <path d="M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a21.8 21.8 0 01-4.21 5.34"/>
+              </svg>
+            </span>
           </div>
 
+          <!-- CONFIRM PASSWORD -->
           <label for="password_confirmation">Confirm Password</label>
           <div class="password-container">
             <input
@@ -56,7 +72,21 @@
               placeholder="Confirm Password"
               required
             />
-            <span class="eye-icon" @click="showConfirmPassword = !showConfirmPassword">👁</span>
+
+            <span class="eye-icon" @click="showConfirmPassword = !showConfirmPassword">
+              <!-- EYE -->
+              <svg v-if="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+
+              <!-- EYE SLASH -->
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a21.77 21.77 0 015.17-6.58"/>
+                <path d="M1 1l22 22"/>
+                <path d="M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a21.8 21.8 0 01-4.21 5.34"/>
+              </svg>
+            </span>
           </div>
 
           <button class="signup-btn" :disabled="loading">
@@ -143,29 +173,23 @@ export default {
   font-family: "Poppins", sans-serif;
 }
 
-/* Warm gradient overlay */
-.background {
-  position: fixed;
-  inset: 0;
-  /* use your color with transparency */
-  background: rgba(194, 158, 114, 0.45); /* #C29E72 at ~45% opacity */
-  backdrop-filter: blur(4px); /* slightly stronger blur for softness */
-  z-index: 0;
-}
-
-
-body {
-  height: 100vh;
+.auth-page {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url('../images/boutique_background.png') no-repeat center center/cover;
+  background: url('/public/images/boutique_background.png') no-repeat center center / cover;
   position: relative;
-  /* enhance brightness and color for that warm glow */
   filter: brightness(1.18) saturate(1.15);
 }
 
-
+.background {
+  position: fixed;
+  inset: 0;
+  background: rgba(194, 158, 114, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 0;
+}
 
 .container {
   position: relative;
@@ -182,143 +206,73 @@ body {
   padding: 40px;
   width: 380px;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0),
-              0 0 30px rgba(194, 158, 114, 0.25); /* soft warm glow */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #121111;
-}
-
-.logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: -0; /* remove large extra space */
 }
 
 .logo img {
-  width: 100px; /* adjust if needed */
-  margin-bottom: -5px; /* pull the heading closer */
+  width: 100px;
 }
 
 h2 {
-  margin-top: 25px; /* small breathing space */
-  margin-bottom: 25px; /* balanced before form */
-  color: #2b2b2b;
-  font-weight: 600;
+  margin: 25px 0;
 }
 
-
-
-/* Form styling */
 form {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 label {
   text-align: left;
   font-size: 14px;
-  color: #3c3c3c;
 }
 
 input {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  outline: none;
 }
 
 .password-container {
   position: relative;
-  width: 100%;
 }
 
 .password-container input {
   width: 100%;
-  padding-right: 10px; /* space for the icon */
+  padding-right: 45px;
 }
 
-.password-container i {
-  position: absolute;
-  right: px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #555;
+/* REMOVE browser default eye */
+.password-container input::-ms-reveal,
+.password-container input::-ms-clear {
+  display: none;
 }
 
-
-#togglePassword {
+.eye-icon {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
-  color: #555;
   cursor: pointer;
-  background: transparent;
-  transition: color 0.2s ease;
-  z-index: 2;
-}
-
-#toggleConfirm {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
+  display: flex;
+  align-items: center;
   color: #555;
-  cursor: pointer;
-  background: transparent;
-  transition: color 0.2s ease;
-  z-index: 2;
 }
 
-#togglePassword:hover {
-  color: #3b2314;
-}
-
-
-/* Button styling */
 button {
   margin-top: 15px;
-  background-color: #3b2314;
+  background: #3b2314;
   color: white;
-  border: none;
   padding: 10px;
+  border: none;
   border-radius: 5px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-button:hover {
-  background-color: #5a321e;
 }
 
 .login-link {
   margin-top: 10px;
-  font-size: 14px;
 }
-
-.login-link a {
-  color: #0044ff;
-  text-decoration: none;
-}
-
-.login-link a:hover {
-  text-decoration: underline;
-}
-
-
 
 .error-box {
   color: red;
-  margin-bottom: 12px;
-}
-
-.eye-icon {
-  cursor: pointer;
 }
 </style>

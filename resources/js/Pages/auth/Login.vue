@@ -35,7 +35,37 @@
               placeholder="Password"
               required
             />
-            <span class="eye-icon" @click="showPassword = !showPassword">👁</span>
+
+            <span class="eye-icon" @click="showPassword = !showPassword">
+              <svg
+                v-if="!showPassword"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.17-6.58"/>
+                <path d="M1 1l22 22"/>
+                <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-4.21 5.34"/>
+              </svg>
+            </span>
           </div>
 
           <p class="forgot-link">
@@ -77,8 +107,6 @@ export default {
       this.errors = []
 
       try {
-
-        // GET CSRF TOKEN FROM META TAG
         const token = document
           .querySelector('meta[name="csrf-token"]')
           ?.getAttribute('content')
@@ -106,9 +134,7 @@ export default {
           return
         }
 
-        // redirect based on role from controller
         this.$router.push(data.redirect || '/men')
-
       } catch (error) {
         console.error(error)
         this.errors = ['Something went wrong. Please try again.']
@@ -128,12 +154,12 @@ export default {
   font-family: "Poppins", sans-serif;
 }
 
-body {
-  height: 100vh;
+.auth-page {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url('../images/boutique_background.png') no-repeat center center/cover;
+  background: url('/public/images/boutique_background.png') no-repeat center center / cover;
   position: relative;
   filter: brightness(1.18) saturate(1.15);
 }
@@ -162,7 +188,7 @@ body {
   width: 380px;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0),
-              0 0 30px rgba(194, 158, 114, 0.25); /* soft warm glow */
+              0 0 30px rgba(194, 158, 114, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #0e0e0e;
 }
@@ -171,7 +197,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: -0px;
+  margin-bottom: 0;
 }
 
 .logo img {
@@ -202,6 +228,7 @@ input {
   border-radius: 5px;
   border: 1px solid #ccc;
   outline: none;
+  width: 100%;
 }
 
 .password-container {
@@ -211,33 +238,32 @@ input {
 
 .password-container input {
   width: 100%;
-  padding-right: 10px; /* space for the icon */
+  padding-right: 45px;
+  box-sizing: border-box;
 }
 
-.password-container i {
-  position: absolute;
-  right: px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #555;
+/* Hide browser default password reveal icon */
+.password-container input::-ms-reveal,
+.password-container input::-ms-clear {
+  display: none;
 }
 
-
-#togglePassword {
+.eye-icon {
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
-  color: #555;
   cursor: pointer;
-  background: transparent;
-  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
   z-index: 2;
+  line-height: 1;
+  user-select: none;
 }
 
-#togglePassword:hover {
+.eye-icon:hover {
   color: #3b2314;
 }
 
@@ -262,22 +288,25 @@ button:hover {
   font-size: 14px;
 }
 
-.login-link a {
+.login-link a,
+.forgot-link a {
   color: #0044ff;
   text-decoration: none;
 }
 
-.login-link a:hover {
+.login-link a:hover,
+.forgot-link a:hover {
   text-decoration: underline;
 }
 
+.forgot-link {
+  margin-top: 4px;
+  text-align: right;
+  font-size: 13px;
+}
 
 .error-box {
   color: red;
   margin-bottom: 12px;
-}
-
-.eye-icon {
-  cursor: pointer;
 }
 </style>
