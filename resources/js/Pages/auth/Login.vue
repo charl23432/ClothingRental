@@ -8,7 +8,7 @@
           <img src="/public/images/hfhmn-Picsart-BackgroundRemover.jpg" alt="logo">
         </div>
 
-        <h2>Login</h2>
+        <h2>Login TESTING</h2>
 
         <div v-if="errors.length" class="error-box">
           <ul>
