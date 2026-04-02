@@ -3,7 +3,7 @@
     <div class="report-wrapper">
     <div class="report-header">
       <h1>Report</h1>
-      <form @submit.prevent="exportPDF" class="export-form">
+      <form @submit.prevent="reportPdf" class="export-form">
         <button type="submit" class="export-btn">Export PDF</button>
       </form>
     </div>
@@ -205,7 +205,7 @@ export default {
       });
     },
 
-    exportPDF() {
+    reportPdf() {
       window.open("/reports/pdf", "_blank");
     },
   },

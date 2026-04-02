@@ -9,6 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
+    // API (USED BY VUE)
     public function index()
     {
         $confirmed = Reservation::where('status', 'confirmed')->count();
@@ -31,7 +32,7 @@ class ReportController extends Controller
             ->orderBy('month')
             ->get();
 
-        // TOP 5 MOST RENTED ITEMS
+        // TOP ITEMS
         $mostRentedItems = Reservation::selectRaw('product_id, COUNT(*) as total')
             ->groupBy('product_id')
             ->orderByDesc('total')
@@ -46,12 +47,10 @@ class ReportController extends Controller
             })
             ->values();
 
-        // Normalize months Jan-Dec
-        $monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
         $monthlyReservations = collect(range(1, 12))->map(function ($month) use ($monthlyReservationsRaw, $monthLabels) {
             $found = $monthlyReservationsRaw->firstWhere('month', $month);
-
             return [
                 'month' => $monthLabels[$month - 1],
                 'total' => $found ? (int) $found->total : 0,
@@ -60,7 +59,6 @@ class ReportController extends Controller
 
         $monthlyIncome = collect(range(1, 12))->map(function ($month) use ($monthlyIncomeRaw, $monthLabels) {
             $found = $monthlyIncomeRaw->firstWhere('month', $month);
-
             return [
                 'month'  => $monthLabels[$month - 1],
                 'income' => $found ? (float) $found->income : 0,
@@ -79,6 +77,7 @@ class ReportController extends Controller
         ]);
     }
 
+    // PDF EXPORT
     public function reportPdf(Request $request)
     {
         $from = $request->from;
@@ -97,24 +96,40 @@ class ReportController extends Controller
 
         $totalIncome = (clone $query)->where('status', 'confirmed')->sum('price');
 
+        // 🔥 ADD MONTHLY DATA (IMPORTANT FIX)
+        $monthly = (clone $query)
+            ->selectRaw('MONTH(created_at) as month, COUNT(*) as reservations, SUM(price) as income')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // 🔥 FIX TOP ITEMS FORMAT
         $mostRentedItems = (clone $query)
             ->selectRaw('product_id, COUNT(*) as total')
             ->groupBy('product_id')
             ->orderByDesc('total')
             ->with('product:id,item_name')
             ->take(5)
-            ->get();
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'name'  => optional($row->product)->item_name ?? 'Unknown',
+                    'total' => (int) $row->total,
+                ];
+            });
 
-        $pdf = Pdf::loadView('admin.report-pdf', compact(
-            'from',
-            'to',
-            'confirmed',
-            'pending',
-            'cancelled',
-            'returned',
-            'totalIncome',
-            'mostRentedItems'
-        ))->setPaper('A4', 'portrait');
+        // 🔥 LOAD VIEW
+        $pdf = Pdf::loadView('admin.report-pdf', [
+            'from' => $from,
+            'to' => $to,
+            'confirmed' => $confirmed,
+            'pending' => $pending,
+            'cancelled' => $cancelled,
+            'returned' => $returned,
+            'totalIncome' => $totalIncome,
+            'monthly' => $monthly,
+            'mostRentedItems' => $mostRentedItems
+        ])->setPaper('A4', 'portrait');
 
         return $pdf->stream('report.pdf');
     }
