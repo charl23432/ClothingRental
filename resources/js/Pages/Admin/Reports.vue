@@ -64,11 +64,15 @@ export default {
   name: "Report",
   data() {
     return {
+      from: "",
+      to: "",
       confirmed: 0,
       pending: 0,
       cancelled: 0,
       returned: 0,
       totalIncome: 0,
+      totalInventory: 0,
+      rentedCount: 0,
       monthlyReservations: [],
       monthlyIncome: [],
       mostRentedItems: [],
@@ -81,10 +85,16 @@ export default {
       },
     };
   },
+
   methods: {
     async fetchReportData() {
       try {
-        const res = await fetch("/api/reports");
+        const params = new URLSearchParams();
+
+        if (this.from) params.append("from", this.from);
+        if (this.to) params.append("to", this.to);
+
+        const res = await fetch(`/api/reports?${params.toString()}`);
 
         if (!res.ok) {
           throw new Error("Failed to fetch report data");
@@ -97,6 +107,8 @@ export default {
         this.cancelled = data.cancelled || 0;
         this.returned = data.returned || 0;
         this.totalIncome = data.totalIncome || 0;
+        this.totalInventory = data.totalInventory || 0;
+        this.rentedCount = data.rentedCount || 0;
         this.monthlyReservations = data.monthlyReservations || [];
         this.monthlyIncome = data.monthlyIncome || [];
         this.mostRentedItems = data.mostRentedItems || [];
@@ -105,6 +117,10 @@ export default {
       } catch (error) {
         console.error(error);
       }
+    },
+
+    applyFilter() {
+      this.fetchReportData();
     },
 
     destroyCharts() {
@@ -150,13 +166,7 @@ export default {
             {
               label: "Times Rented",
               data: this.mostRentedItems.map((i) => i.total),
-              backgroundColor: [
-                "#56c45c",
-                "#f4c27a",
-                "#8bc34a",
-                "#e57373",
-                "#8b5e3c",
-              ],
+              backgroundColor: ["#56c45c", "#f4c27a", "#8bc34a", "#e57373", "#8b5e3c"],
               borderRadius: 6,
             },
           ],
@@ -206,7 +216,12 @@ export default {
     },
 
     reportPdf() {
-      window.open("/reports/pdf", "_blank");
+      const params = new URLSearchParams();
+
+      if (this.from) params.append("from", this.from);
+      if (this.to) params.append("to", this.to);
+
+      window.open(`/reports/pdf?${params.toString()}`, "_blank");
     },
   },
 
