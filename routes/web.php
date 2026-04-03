@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // PDF
+
 Route::get('/reports/pdf', [ReportController::class, 'reportPdf']);
 
 // Vue catch-all LAST

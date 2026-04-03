@@ -239,8 +239,19 @@
 }
 
 .delivery-method label {
-  display: block;
-  margin-bottom: 6px;
+  display: flex;
+  justify-content: space;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.delivery-method input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  margin-left: 100px;
+  transform: translateY(2px); /* 👈 moves it slightly down */
+
 }
 
 .rental-info {
