@@ -248,8 +248,7 @@
 .delivery-method input[type="radio"] {
   width: 18px;
   height: 18px;
-  margin: 0;
-  margin-left: 100px;
+  margin-right: 10px;
   transform: translateY(2px); /* 👈 moves it slightly down */
 
 }
