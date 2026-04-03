@@ -163,7 +163,14 @@
               <input v-model="form.name" id="inputName" type="text" />
 
               <label>Number</label>
-              <input v-model="form.number" id="inputNumber" type="text" />
+              <input
+                v-model="form.number"
+                id="inputNumber"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                @input="form.number = form.number.replace(/\D/g, '')"
+              />
 
               <label>Email</label>
               <input v-model="form.email" id="inputEmail" type="email" />
@@ -278,6 +285,8 @@ export default {
   name: 'Profile',
   data() {
     return {
+      isInitialized: false,
+      
       activeTab: 'rented',
 
       user: {
@@ -339,10 +348,6 @@ export default {
 
   async mounted() {
     await this.fetchProfile()
-
-    this.pollingInterval = setInterval(async () => {
-      await this.fetchProfile()
-    }, 5000)
   },
 
   beforeUnmount() {
@@ -352,6 +357,9 @@ export default {
   },
 
   methods: {
+    handleNumberInput(e) {
+      this.form.number = e.target.value.replace(/\D/g, '')
+    },
     getCsrfToken() {
       return document
         .querySelector('meta[name="csrf-token"]')
@@ -382,10 +390,13 @@ export default {
         this.notifications = data.notifications || []
         this.unreadCount = data.unread_count || 0
 
-        this.form.name = this.user.name || ''
-        this.form.number = this.user.number || this.user.contact_number || ''
-        this.form.email = this.user.email || ''
-        this.form.address = this.user.address || ''
+        if (!this.isInitialized) {
+          this.form.name = this.user.name || ''
+          this.form.number = this.user.number || this.user.contact_number || ''
+          this.form.email = this.user.email || ''
+          this.form.address = this.user.address || ''
+          this.isInitialized = true
+        }
       } catch (error) {
         console.error('Failed to load profile:', error)
       }
