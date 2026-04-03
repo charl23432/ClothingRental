@@ -33,16 +33,16 @@
         </div>
 
         <div class="delivery-method">
-          <label>
-            <input type="radio" v-model="delivery" value="delivery" />
-            For Delivery (fee ₱50)
-          </label>
+        <label class="delivery-option">
+          <span class="delivery-text">For Delivery (fee ₱50)</span>
+          <input type="radio" v-model="delivery" value="delivery" />
+        </label>
 
-          <label>
-            <input type="radio" v-model="delivery" value="pickup" />
-            For Pick Up
-          </label>
-        </div>
+        <label class="delivery-second">
+          <span class="delivery-text">For Pick Up</span>
+          <input type="radio" v-model="delivery" value="pickup" />
+        </label>
+      </div>
 
         <div class="rental-info">
           <label>Rent Time</label>
