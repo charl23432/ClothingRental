@@ -6,7 +6,6 @@
     </h2>
 
     <div class="item-form">
-      <!-- IMAGE UPLOAD -->
       <div class="image-upload">
         <img id="preview-image" :src="previewImage" alt="Preview" />
 
@@ -24,20 +23,15 @@
         </button>
       </div>
 
-      <!-- ITEM DETAILS -->
       <div class="item-details">
         <label>Item Name:</label>
         <input v-model="item.item_name" type="text" required />
-
-        <label>Available:</label>
-        <input v-model="item.quantity" type="number" required />
 
         <label>Rental Fee:</label>
         <input v-model="item.rental_fee" type="text" required />
       </div>
     </div>
 
-    <!-- SIZES SECTION -->
     <div class="sizes-section">
       <h3>AVAILABLE SIZE (inches)</h3>
       <button id="add-size-btn" type="button" @click="openSizeModal">
@@ -51,6 +45,7 @@
             <th>Chest</th>
             <th>Waist</th>
             <th>Hip</th>
+            <th>Available</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -61,8 +56,9 @@
             <td>{{ size.chest }}</td>
             <td>{{ size.waist }}</td>
             <td>{{ size.hip }}</td>
+            <td>{{ size.stock }}</td>
             <td>
-              <button type="button" id="edit-size-btn"  @click="editSize(index)">Edit</button>
+              <button type="button" id="edit-size-btn" @click="editSize(index)">Edit</button>
               <button type="button" id="delete-size-btn" @click="deleteSize(index)">Delete</button>
             </td>
           </tr>
@@ -79,17 +75,24 @@
       {{ isEdit ? "Save Changes" : "Add This Item" }}
     </button>
 
-    <!-- SIZE MODAL -->
     <div v-if="showSizeModal" id="size-modal" class="modal">
       <div class="modal-content">
-        <input v-model="sizeTemp.size" placeholder="Size" />
-        <input v-model="sizeTemp.chest" placeholder="Chest" />
-        <input v-model="sizeTemp.waist" placeholder="Waist" />
-        <input v-model="sizeTemp.hip" placeholder="Hip" />
+        <h3 style="margin-top:0;">{{ editIndex !== undefined ? 'Edit Size' : 'Add Size' }}</h3>
 
-        <button type="button" id="confirm-size-btn" @click="confirmSize">
-          Confirm
-        </button>
+        <input v-model="sizeTemp.size" placeholder="Size (ex. small)" />
+        <input v-model.number="sizeTemp.chest" type="number" placeholder="Chest" />
+        <input v-model.number="sizeTemp.waist" type="number" placeholder="Waist" />
+        <input v-model.number="sizeTemp.hip" type="number" placeholder="Hip" />
+        <input v-model.number="sizeTemp.stock" type="number" min="0" placeholder="Available stock" />
+
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <button type="button" id="confirm-size-btn" @click="confirmSize">
+            Confirm
+          </button>
+          <button type="button" id="cancel-size-btn" @click="closeSizeModal">
+            Close
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -112,7 +115,7 @@ export default {
     return {
       item: {
         item_name: "",
-        quantity: "",
+        quantity: 0,
         rental_fee: "",
         category: this.category,
         sizes: [],
@@ -126,6 +129,7 @@ export default {
         chest: "",
         waist: "",
         hip: "",
+        stock: 0,
       },
       editIndex: undefined,
     };
@@ -134,6 +138,12 @@ export default {
   computed: {
     isEdit() {
       return !!this.itemData && Object.keys(this.itemData).length > 0;
+    },
+
+    totalQuantity() {
+      return this.item.sizes.reduce((total, size) => {
+        return total + Number(size.stock || 0);
+      }, 0);
     },
 
     redirectUrl() {
@@ -158,7 +168,7 @@ export default {
           this.item = {
             id: newValue.id || null,
             item_name: newValue.item_name || "",
-            quantity: newValue.quantity || "",
+            quantity: newValue.quantity || 0,
             rental_fee: newValue.rental_fee || "",
             category: newValue.category || this.category,
             sizes: Array.isArray(newValue.sizes)
@@ -181,7 +191,8 @@ export default {
       if (Array.isArray(sizes)) return sizes;
 
       try {
-        return JSON.parse(sizes);
+        const parsed = JSON.parse(sizes);
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
       }
@@ -203,12 +214,19 @@ export default {
         chest: "",
         waist: "",
         hip: "",
+        stock: 0,
       };
     },
 
     editSize(index) {
       this.editIndex = index;
-      this.sizeTemp = { ...this.item.sizes[index] };
+      this.sizeTemp = {
+        size: this.item.sizes[index].size || "",
+        chest: Number(this.item.sizes[index].chest || 0),
+        waist: Number(this.item.sizes[index].waist || 0),
+        hip: Number(this.item.sizes[index].hip || 0),
+        stock: Number(this.item.sizes[index].stock || 0),
+      };
       this.showSizeModal = true;
     },
 
@@ -217,10 +235,39 @@ export default {
     },
 
     confirmSize() {
+      if (!this.sizeTemp.size.trim()) {
+        alert("Please enter size.");
+        return;
+      }
+
+      if (Number(this.sizeTemp.stock) < 0) {
+        alert("Available stock cannot be negative.");
+        return;
+      }
+
+      const payload = {
+        size: this.sizeTemp.size.trim().toLowerCase(),
+        chest: Number(this.sizeTemp.chest),
+        waist: Number(this.sizeTemp.waist),
+        hip: Number(this.sizeTemp.hip),
+        stock: Number(this.sizeTemp.stock),
+      };
+
+      const duplicateIndex = this.item.sizes.findIndex(
+        (s, i) =>
+          s.size?.toLowerCase() === payload.size.toLowerCase() &&
+          i !== this.editIndex
+      );
+
+      if (duplicateIndex !== -1) {
+        alert("This size already exists.");
+        return;
+      }
+
       if (this.editIndex !== undefined) {
-        this.item.sizes[this.editIndex] = { ...this.sizeTemp };
+        this.item.sizes[this.editIndex] = payload;
       } else {
-        this.item.sizes.push({ ...this.sizeTemp });
+        this.item.sizes.push(payload);
       }
 
       this.closeSizeModal();
@@ -234,6 +281,7 @@ export default {
         chest: "",
         waist: "",
         hip: "",
+        stock: 0,
       };
     },
 
@@ -241,7 +289,7 @@ export default {
       try {
         const formData = new FormData();
         formData.append("item_name", this.item.item_name);
-        formData.append("quantity", this.item.quantity);
+        formData.append("quantity", this.totalQuantity);
         formData.append("rental_fee", this.item.rental_fee);
         formData.append("category", this.item.category);
         formData.append("sizes", JSON.stringify(this.item.sizes));
@@ -269,16 +317,16 @@ export default {
         });
 
         const text = await res.text();
-        console.log("ITEM SAVE RESPONSE:", text);
 
         if (!res.ok) {
           throw new Error(text || "Failed to save item");
         }
 
+        alert(this.isEdit ? "Item updated successfully." : "Item added successfully.");
         this.$router.push(this.redirectUrl);
       } catch (error) {
         console.error("Submit failed:", error);
-        alert("Failed to save item. Check console/network.");
+        alert(error.message || "Failed to save item.");
       }
     },
   },
@@ -389,23 +437,27 @@ h2:hover i {
 
 #size-table th,
 #size-table td {
-  padding: 5px 34px;
+  padding: 8px 20px;
   border: 1px solid #0d0d0d;
   text-align: center;
   background-color: #e8e7e7;
 }
-#edit-size-btn{
+
+#edit-size-btn {
   background: #007bff;
   color: white;
   border: none;
   padding: 5px 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s; 
+  transition: 0.3s;
+  margin-right: 5px;
 }
+
 #edit-size-btn:hover {
   background: #647b93;
 }
+
 #delete-size-btn {
   background: #dc3545;
   color: white;
@@ -413,8 +465,9 @@ h2:hover i {
   padding: 5px 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s; 
+  transition: 0.3s;
 }
+
 #delete-size-btn:hover {
   background: #a71d2a;
 }
@@ -452,8 +505,16 @@ h2:hover i {
   padding: 20px;
   border-radius: 15px;
   width: 350px;
-  height: 250px;
   color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-content input {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
 }
 
 .modal-content button {
@@ -461,8 +522,11 @@ h2:hover i {
   color: black;
   border: none;
   border-radius: 10px;
-  margin-top: 15px;
-  padding: 5px 10px;
+  padding: 8px 12px;
   cursor: pointer;
+}
+
+#cancel-size-btn {
+  background: #ddd;
 }
 </style>
