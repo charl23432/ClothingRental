@@ -72,6 +72,8 @@ Route::get('/women/prom', [ProductController::class, 'womenProm']);
 // Checkout
 
 Route::get('/checkout/{id}', [CheckoutController::class, 'checkout']);
+Route::get('/checkout/{id}', [CheckoutController::class, 'show']);
+
 // Profile
 
 
