@@ -24,13 +24,11 @@ class Reservation extends Model
         'rent_time' => 'datetime',
     ];
 
-    // Link to the User
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class);
     }
 
-    // Link to the Item/Product
     public function product()
     {
         return $this->belongsTo(\App\Models\Item::class, 'product_id');
