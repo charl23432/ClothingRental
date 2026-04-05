@@ -59,7 +59,7 @@ export default {
 .reservation-header {
   flex: 1;
   padding: 30px 20px;
-   margin-left: 190px;
+  margin-left: 190px;
 }
 
 /* Title */
