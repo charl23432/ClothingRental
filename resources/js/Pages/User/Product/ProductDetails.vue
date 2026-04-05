@@ -32,21 +32,33 @@
               <th>Chest</th>
               <th>Waist</th>
               <th>Hip</th>
+              <th>Available</th>
             </tr>
           </thead>
 
           <tbody>
             <tr v-for="(size, index) in sizes" :key="index">
-              <td>{{ size.size }}</td>
+              <td>{{ capitalize(size.size) }}</td>
               <td>{{ size.chest }}</td>
               <td>{{ size.waist }}</td>
               <td>{{ size.hip }}</td>
+              <td>
+                <span v-if="Number(size.available) > 0">
+                  {{ size.available }} left
+                </span>
+                <span v-else style="color:#dc3545;font-weight:bold;">
+                  Not available
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
       </template>
 
-      <router-link :to="`/checkout/${product.id}`">
+      <router-link
+        v-if="Number(product.quantity) > 0"
+        :to="`/checkout/${product.id}`"
+      >
         <button
           id="rentNowBtn"
           class="rent-btn"
@@ -55,6 +67,15 @@
           RENT NOW
         </button>
       </router-link>
+
+      <button
+        v-else
+        id="rentNowBtn"
+        class="rent-btn"
+        disabled
+      >
+        RENT NOW
+      </button>
     </div>
   </section>
 
@@ -94,7 +115,18 @@ export default {
   },
   async mounted() {
     try {
-      const res = await fetch(`/api/products/${this.$route.params.id}`)
+      const res = await fetch(`/api/products/${this.$route.params.id}`, {
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to load product')
+      }
+
       this.product = await res.json()
     } catch (error) {
       console.error('Failed to load product details:', error)
@@ -109,6 +141,10 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })
+    },
+    capitalize(value) {
+      if (!value) return ''
+      return value.charAt(0).toUpperCase() + value.slice(1)
     }
   }
 }
