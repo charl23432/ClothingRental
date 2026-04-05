@@ -34,7 +34,7 @@ Prom & Styles
 
 </div>
 
-<InventoryTable :items="filteredItems" />
+<InventoryTable :items="filteredItems" @delete-item="deleteItem"/>
 
 </div>
 
@@ -76,6 +76,33 @@ export default {
         this.items = await res.json()
       } catch (error) {
         console.error('Failed to fetch items:', error)
+      }
+    },
+
+    async deleteItem(id) {
+      const confirmDelete = confirm('Are you sure you want to delete this item?')
+      if (!confirmDelete) return
+
+      try {
+        const res = await fetch(`/api/inventory/${id}`, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+
+        if (!res.ok) {
+          throw new Error('Failed to delete item')
+        }
+
+        this.items = this.items.filter(item => item.id !== id)
+
+        alert('Item deleted successfully.')
+      } catch (error) {
+        console.error('Delete failed:', error)
+        alert('Delete failed.')
       }
     }
   }
