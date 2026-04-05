@@ -9,10 +9,7 @@
     </div>
 
     <div class="checkout-form">
-      <form
-        id="checkoutForm"
-        @submit.prevent="submitCheckout"
-      >
+      <form id="checkoutForm" @submit.prevent="submitCheckout">
         <input type="hidden" name="product_id" :value="product.id" />
         <input type="hidden" name="price" :value="product.rental_fee" />
         <input type="hidden" name="size" :value="selectedSize" />
@@ -26,10 +23,18 @@
             type="button"
             class="size-btn"
             :class="{ active: selectedSize === sizeData.size }"
+            :disabled="Number(sizeData.available || 0) <= 0"
             @click="selectedSize = sizeData.size"
           >
             {{ capitalize(sizeData.size) }}
+            <span v-if="sizeData.available !== undefined">
+              ({{ sizeData.available }} left)
+            </span>
           </button>
+        </div>
+
+        <div v-if="!availableSizes.length" style="color:red; margin-bottom: 15px;">
+          No available sizes found.
         </div>
 
         <div class="delivery-method">
@@ -117,7 +122,11 @@
     </div>
   </section>
 
-  <div v-else style="padding: 20px;">Loading checkout...</div>
+  <div v-else-if="loading" style="padding: 20px;">Loading checkout...</div>
+
+  <div v-else style="padding: 20px; color: red;">
+    {{ errorMessage || 'Failed to load checkout.' }}
+  </div>
 </template>
 
 <script>
@@ -131,7 +140,9 @@ export default {
       selectedSize: '',
       delivery: 'delivery',
       rent_time: '',
-      gcash_reference: ''
+      gcash_reference: '',
+      loading: true,
+      errorMessage: ''
     }
   },
   computed: {
@@ -146,41 +157,67 @@ export default {
     }
   },
   async mounted() {
-    try {
-      const [productRes, settingsRes] = await Promise.all([
-        fetch(`/api/checkout/${this.$route.params.id}`, {
-          credentials: 'same-origin',
-          headers: {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        }),
-        fetch('/api/settings', {
+    await this.loadCheckout()
+  },
+  methods: {
+    async loadCheckout() {
+      this.loading = true
+      this.errorMessage = ''
+
+      try {
+        const productRes = await fetch(`/api/checkout/${this.$route.params.id}`, {
           credentials: 'same-origin',
           headers: {
             Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-      ])
 
-      if (!productRes.ok || !settingsRes.ok) {
-        throw new Error('Failed to load checkout data')
+        if (!productRes.ok) {
+          const text = await productRes.text()
+          throw new Error(text || 'Failed to load checkout item')
+        }
+
+        const checkoutData = await productRes.json()
+        this.product = checkoutData.product
+        this.availableSizes = checkoutData.availableSizes || []
+
+        const firstAvailable = this.availableSizes.find(
+          size => Number(size.available || 0) > 0
+        )
+
+        if (firstAvailable) {
+          this.selectedSize = firstAvailable.size
+        } else if (this.availableSizes.length > 0) {
+          this.selectedSize = this.availableSizes[0].size
+        }
+
+        try {
+          const settingsRes = await fetch('/api/settings', {
+            credentials: 'same-origin',
+            headers: {
+              Accept: 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+
+          if (settingsRes.ok) {
+            this.setting = await settingsRes.json()
+          } else {
+            this.setting = null
+          }
+        } catch (settingsError) {
+          console.error('Settings load failed:', settingsError)
+          this.setting = null
+        }
+      } catch (error) {
+        console.error('Failed to load checkout data:', error)
+        this.errorMessage = error.message || 'Failed to load checkout data.'
+      } finally {
+        this.loading = false
       }
+    },
 
-      const checkoutData = await productRes.json()
-      this.product = checkoutData.product
-      this.availableSizes = checkoutData.availableSizes || []
-      this.setting = await settingsRes.json()
-
-      if (this.availableSizes.length > 0) {
-        this.selectedSize = this.availableSizes[0].size
-      }
-    } catch (error) {
-      console.error('Failed to load checkout data:', error)
-    }
-  },
-  methods: {
     getCsrfToken() {
       const meta = document.querySelector('meta[name="csrf-token"]')
       return meta ? meta.getAttribute('content') : ''
@@ -229,7 +266,7 @@ export default {
           credentials: 'same-origin',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': csrfToken
           },
@@ -256,6 +293,7 @@ export default {
     async copyGcash() {
       try {
         await navigator.clipboard.writeText(this.gcashNumber)
+        alert('GCash number copied.')
       } catch (error) {
         console.error('Failed to copy GCash number:', error)
       }
@@ -279,4 +317,3 @@ export default {
   }
 }
 </script>
-
