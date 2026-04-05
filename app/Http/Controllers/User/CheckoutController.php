@@ -3,92 +3,143 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
 use App\Models\Item;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
-    public function checkout($id)
+    private function parseSizes($sizes)
     {
-        $product = Item::findOrFail($id);
+        if (is_array($sizes)) {
+            return $sizes;
+        }
 
-        $availableSizes = collect(
-            json_decode($product->sizes, true) ?? []
-        );
+        $decoded = json_decode($sizes, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    private function getBlockingStatuses()
+    {
+        return ['pending', 'confirmed', 'rented'];
+    }
+
+    private function getAvailableSizes(Item $item)
+    {
+        $sizes = $this->parseSizes($item->sizes);
+
+        foreach ($sizes as &$size) {
+            $sizeName = strtolower($size['size'] ?? '');
+
+            $usedCount = Reservation::where('product_id', $item->id)
+                ->whereRaw('LOWER(size) = ?', [$sizeName])
+                ->whereIn('status', $this->getBlockingStatuses())
+                ->count();
+
+            $stock = (int) ($size['stock'] ?? 0);
+            $size['stock'] = $stock;
+            $size['available'] = max($stock - $usedCount, 0);
+        }
+
+        return $sizes;
+    }
+
+    private function getTotalAvailableFromSizes($sizes)
+    {
+        return collect($sizes)->sum(function ($size) {
+            return (int) ($size['available'] ?? 0);
+        });
+    }
+
+    private function refreshItemQuantity(Item $item)
+    {
+        $sizes = $this->getAvailableSizes($item);
+        $item->quantity = $this->getTotalAvailableFromSizes($sizes);
+        $item->save();
+
+        return $item;
+    }
+
+    public function show($id)
+    {
+        $item = Item::findOrFail($id);
+
+        $availableSizes = $this->getAvailableSizes($item);
+        $item->quantity = $this->getTotalAvailableFromSizes($availableSizes);
 
         return response()->json([
-            'product' => $product,
+            'product' => $item,
             'availableSizes' => $availableSizes,
         ]);
     }
 
     public function store(Request $request)
     {
-        // ✅ ADD THIS CHECK
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'You must be logged in to make a reservation.'
-            ], 401);
-        }
-
         $request->validate([
             'product_id' => 'required|exists:items,id',
-            'rent_time'  => 'required|date',
-            'delivery'   => 'required|in:delivery,pickup',
-            'price'      => 'required|numeric',
+            'price' => 'required',
+            'size' => 'required|string',
+            'delivery' => 'required|in:delivery,pickup',
+            'rent_time' => 'required|date',
+            'gcash_reference' => 'required|string',
         ]);
 
         $item = Item::findOrFail($request->product_id);
+        $sizes = $this->getAvailableSizes($item);
 
-        $availableSizes = collect(
-            json_decode($item->sizes, true) ?? []
-        )
-        ->pluck('size')
-        ->map(fn ($size) => strtolower(trim($size)))
-        ->toArray();
-
-        $request->merge([
-            'size' => strtolower(trim($request->size))
-        ]);
-
-        $request->validate([
-            'size' => ['required', Rule::in($availableSizes)],
-        ]);
-
-        if ($request->delivery === 'delivery' && blank($request->gcash_reference)) {
-            return response()->json([
-                'message' => 'GCash Reference is required for delivery.'
-            ], 422);
-        }
-
-        if ($item->quantity <= 0) {
-            return response()->json([
-                'message' => 'Sorry, this item is currently out of stock.'
-            ], 422);
-        }
-
-        $reservation = DB::transaction(function () use ($request, $item) {
-            $deliveryFee = $request->delivery === 'delivery' ? 50 : 0;
-
-            return Reservation::create([
-                'user_id'         => Auth::id(), // now guaranteed not null
-                'product_id'      => $item->id,
-                'size'            => $request->size,
-                'rent_time'       => $request->rent_time,
-                'delivery'        => $request->delivery,
-                'gcash_reference' => $request->gcash_reference,
-                'price'           => $request->price + $deliveryFee,
-                'status'          => 'Pending',
-            ]);
+        $selectedSize = collect($sizes)->first(function ($size) use ($request) {
+            return strtolower($size['size'] ?? '') === strtolower($request->size);
         });
 
+        if (!$selectedSize) {
+            return response()->json([
+                'message' => 'Selected size does not exist.'
+            ], 422);
+        }
+
+        if ((int) ($selectedSize['available'] ?? 0) <= 0) {
+            return response()->json([
+                'message' => 'This size is no longer available.'
+            ], 422);
+        }
+
+        Reservation::create([
+            'user_id' => auth()->id(),
+            'product_id' => $item->id,
+            'size' => strtolower($request->size),
+            'rent_time' => $request->rent_time,
+            'delivery' => $request->delivery,
+            'gcash_reference' => $request->gcash_reference,
+            'price' => $request->price,
+            'status' => 'pending',
+        ]);
+
+        $this->refreshItemQuantity($item);
+
         return response()->json([
-            'message' => 'Reservation submitted! Please wait for admin confirmation.',
-            'reservation' => $reservation
+            'message' => 'Reservation submitted successfully!'
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,rented,returned',
+        ]);
+
+        $reservation = Reservation::findOrFail($id);
+        $reservation->status = $request->status;
+        $reservation->save();
+
+        $item = Item::find($reservation->product_id);
+
+        if ($item) {
+            $this->refreshItemQuantity($item);
+        }
+
+        return response()->json([
+            'message' => 'Reservation status updated successfully.'
         ]);
     }
 }
