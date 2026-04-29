@@ -2,7 +2,7 @@
   <main class="main-content">
     <h2 style="cursor: pointer" @click="$router.back()">
       <i class="fa-solid fa-angle-left"></i>
-      {{ isEdit ? "Edit Item" : "Add New Item" }}
+      {{ isEdit ? "< Edit Item" : "< Add New Item" }}
     </h2>
 
     <div class="item-form">

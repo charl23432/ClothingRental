@@ -73,8 +73,6 @@
         <p><strong>Reference No.:</strong> {{ selectedReservation.gcash_reference || '-' }}</p>
         <p><strong>Price:</strong> ₱{{ formatPrice(selectedReservation.price) }}</p>
         <p><strong>Status:</strong> {{ selectedReservation.status || '-' }}</p>
-
-        <button class="close-btn" @click="closeModal">Close</button>
       </div>
     </div>
   </div>

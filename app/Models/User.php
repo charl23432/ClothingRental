@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail; // ✅ ADD THIS
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Reservation;
 use Carbon\Carbon;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail // ✅ ADD THIS
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -22,9 +23,10 @@ class User extends Authenticatable
         'password',
         'number',
         'address',
-        'profile_photo',   // ✅ ADD THIS
+        'profile_photo',
         'role',
         'last_seen',
+        'email_verified_at', // ✅ ADD THIS (important)
     ];
 
     /**

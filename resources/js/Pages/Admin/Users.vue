@@ -76,7 +76,6 @@
     <!-- USER VIEW MODAL -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-content" style="max-width:450px;">
-        <span class="close-btn" @click="closeModal">×</span>
 
         <div style="text-align:center;">
           <img

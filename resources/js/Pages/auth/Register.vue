@@ -130,6 +130,11 @@ export default {
           .querySelector('meta[name="csrf-token"]')
           ?.getAttribute('content')
 
+        if (!token) {
+          this.errors = ['CSRF token not found. Please add the csrf meta tag in your Blade file.']
+          return
+        }
+
         const res = await fetch('/register', {
           method: 'POST',
           credentials: 'same-origin',
@@ -142,21 +147,40 @@ export default {
           body: JSON.stringify(this.form)
         })
 
-        const data = await res.json()
+        const contentType = res.headers.get('content-type') || ''
+        let data = {}
+
+        if (contentType.includes('application/json')) {
+          data = await res.json()
+        } else {
+          const text = await res.text()
+          this.errors = [
+            `Server returned a non-JSON response. Status: ${res.status}`,
+            text.substring(0, 200)
+          ]
+          return
+        }
 
         if (!res.ok) {
           if (data.errors) {
             this.errors = Object.values(data.errors).flat()
+          } else if (data.error) {
+            this.errors = [data.error]
           } else {
             this.errors = [data.message || 'Registration failed.']
           }
           return
         }
 
-        this.$router.push(data.redirect || '/men')
+        if (data.redirect) {
+          this.$router.push(data.redirect)
+        } else {
+          this.$router.push('/men')
+        }
+
       } catch (error) {
-        console.error(error)
-        this.errors = ['Something went wrong. Please try again.']
+        console.error('Register fetch error:', error)
+        this.errors = [error.message || 'Something went wrong. Please try again.']
       } finally {
         this.loading = false
       }
