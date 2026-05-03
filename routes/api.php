@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CheckoutController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\User\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +67,7 @@ Route::get('/reports', [ReportController::class, 'index']);
 | User API
 |--------------------------------------------------------------------------
 */
+
 Route::get('/products/{id}', [ProductController::class, 'details']);
 Route::get('/men', [ProductController::class, 'men']);
 Route::get('/men/tuxedo', [ProductController::class, 'menTuxedo']);
@@ -76,3 +78,10 @@ Route::get('/women/prom', [ProductController::class, 'womenProm']);
 
 // Checkout
 Route::get('/checkout/{id}', [CheckoutController::class, 'show']);
+
+// routes/api.php
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'profile']);
+    Route::post('/profile/update', [ProfileController::class, 'update']);
+    Route::post('/profile/reset-password', [ProfileController::class, 'resetPassword']);
+});
